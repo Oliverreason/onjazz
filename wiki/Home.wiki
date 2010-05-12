@@ -1,4 +1,4 @@
-#summary Project code-name Jazz
+#summary Project code-name "Jazz"
 
 = Introduction =
 
