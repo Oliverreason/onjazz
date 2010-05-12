@@ -1,4 +1,4 @@
-#summary Home page of project code-name Jazz
+#summary Project code-name Jazz
 
 = Introduction =
 
