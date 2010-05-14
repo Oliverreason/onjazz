@@ -87,6 +87,8 @@
     <Compile Include="Camera\DebugCamera.cs" />
     <Compile Include="Camera\FirstPersonCamera.cs" />
     <Compile Include="Camera\ThirdPersonCamera.cs" />
+    <Compile Include="GameState\GameState.cs" />
+    <Compile Include="GameState\GameStateManager.cs" />
     <Compile Include="Objects\Bullet.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Player\PlayerManager.cs" />

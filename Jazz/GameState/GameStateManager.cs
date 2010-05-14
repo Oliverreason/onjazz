@@ -11,35 +11,15 @@ using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
 
-namespace Jazz.Player
+
+namespace Jazz.GameState
 {
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-
-    public class Player : Microsoft.Xna.Framework.GameComponent
+    public class GameStateManager : Microsoft.Xna.Framework.GameComponent
     {
-        private enum movement_state:byte { NO_ACTION, WALK, CROUTCH, SPRINT, JOG };
-        private enum weapon_state:byte { NO_ACTION, GUN_READY, GUN_SHOOT, RELOAD, WEAPON_SWITCH };
-        
-        // Member variables
-        // Stats
-        protected float m_fHitPoints;
-        protected float m_fArmor;
-
-        // Physics
-        protected Vector3 m_vPosition;
-        protected Vector3 m_vVelocity;
-        protected float m_fMass;
-
-        // Camera
-        protected Jazz.Camera.FirstPersonCamera m_fpCamera;
-
-        // Player States
-        //protected movement_state m_aMovementState;
-        //protected weapon_state m_wWeaponState;
-
-        public Player(Game game)
+        public GameStateManager(Game game)
             : base(game)
         {
             // TODO: Construct any child components here
@@ -65,23 +45,6 @@ namespace Jazz.Player
             // TODO: Add your update code here
 
             base.Update(gameTime);
-
         }
-
-        public void updateMovement() { }
-        public void updateCollisions() { }
-
-
-        // Actions & Event Handlers
-        // Movement
-        public void doCroutch() { 
-            // update camera
-            // update skeleton and hitboxes of mesh
-        }
-        public void doWalk() { }
-        public void doSprint() { }
-        public void doJog() { }
-
-        // Getters & Setters
     }
 }
