@@ -20,11 +20,16 @@ namespace Jazz
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        GameManager m_gameManager;
+        
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            m_gameManager = new GameManager(this);
+           
         }
 
         /// <summary>
@@ -38,6 +43,7 @@ namespace Jazz
             // TODO: Add your initialization logic here
 
             base.Initialize();
+            m_gameManager.Initialize();
         }
 
         /// <summary>
@@ -69,12 +75,11 @@ namespace Jazz
         protected override void Update(GameTime gameTime)
         {
             // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 this.Exit();
-
-            // TODO: Add your update logic here
-
             base.Update(gameTime);
+            m_gameManager.Update(gameTime);
+            //float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
         }
 
         /// <summary>
@@ -88,6 +93,7 @@ namespace Jazz
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
+            //m_gameManager.Draw(gameTime);
         }
     }
 }
