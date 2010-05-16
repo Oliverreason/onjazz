@@ -17,12 +17,14 @@ namespace Jazz.Player
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class PlayerManager : Microsoft.Xna.Framework.GameComponent
+    public class PlayerManager : Microsoft.Xna.Framework.DrawableGameComponent
     {
+        Player[] m_thePlayers;
+        
         public PlayerManager(Game game)
             : base(game)
         {
-            // TODO: Construct any child components here
+            m_thePlayers = new Player[Constants.MAX_PLAYERS];
         }
 
         /// <summary>
@@ -31,9 +33,31 @@ namespace Jazz.Player
         /// </summary>
         public override void Initialize()
         {
+            base.Initialize();
+            for (int i = 0; i < Constants.MAX_PLAYERS; i++)
+            {
+                m_thePlayers[i] = new Player(Game,i);
+            }
+        }
+
+        /// <summary>
+        ///      
+        /// </summary>
+        protected override void LoadContent()
+        {
             // TODO: Add your initialization code here
 
-            base.Initialize();
+            base.LoadContent();
+        }
+
+        /// <summary>
+        ///      
+        /// </summary>
+        protected override void UnloadContent()
+        {
+            // TODO: Add your initialization code here
+
+            base.UnloadContent();
         }
 
         /// <summary>
@@ -42,9 +66,31 @@ namespace Jazz.Player
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            // TODO: Add your update code here
-
             base.Update(gameTime);
+            for (int i = 0; i < Constants.MAX_PLAYERS; i++)
+            {
+                if (GamePad.GetState((PlayerIndex)i).IsConnected)
+                    m_thePlayers[i].Update(gameTime);
+            }
+
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public override void Draw(GameTime gameTime)
+        {
+
+            // TODO: Add your drawing code here
+
+            base.Draw(gameTime);
+        }
+
+
+        public Player GetPlayerIndex(int iIndex)
+        {
+            return m_thePlayers[iIndex];
         }
     }
 }
