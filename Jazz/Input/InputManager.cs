@@ -59,13 +59,13 @@ namespace Jazz.Input
         {
             Update(gameTime);
             if (playerManager != null)
-                CalculateEvents(playerManager);
+                CalculateEvents(gameTime, playerManager);
         }
         
         /// <summary>
         /// 
         /// </summary>
-        private void CalculateEvents(Player.PlayerManager playerManager)
+        private void CalculateEvents(GameTime gameTime, Player.PlayerManager playerManager)
         {
             for (int i = 0; i < Constants.MAX_PLAYERS; i++){
                 if (GamePad.GetState((PlayerIndex)i).IsConnected){
@@ -87,15 +87,8 @@ namespace Jazz.Input
                             playerManager.GetPlayerIndex(i).HandleButton(value, Constants.GamePad_ButtonState.JUST_RELEASED);
                         }
                     }
-                    if (!currentGamePadState.ThumbSticks.Left.Equals(new Vector2()))
-                    {
-                        playerManager.GetPlayerIndex(i).HandleStick(Constants.Thumbstick_selection.LEFT);
-                    }
-                    if (!currentGamePadState.ThumbSticks.Right.Equals(new Vector2()))
-                    {
-                        playerManager.GetPlayerIndex(i).HandleStick(Constants.Thumbstick_selection.RIGHT);
-                    }
-
+                    //playerManager.GetPlayerIndex(i).HandleStick(gameTime, Constants.Thumbstick_selection.LEFT);
+                    playerManager.GetPlayerIndex(i).HandleStick(gameTime, Constants.Thumbstick_selection.RIGHT);
                 }
             }
         }

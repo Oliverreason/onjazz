@@ -70,6 +70,7 @@
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
@@ -94,6 +95,8 @@
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\InputState.cs" />
     <Compile Include="Objects\Bullet.cs" />
+    <Compile Include="Objects\Math.cs" />
+    <Compile Include="Objects\Spring.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Player\PlayerManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -22,13 +22,13 @@ namespace Jazz
         SpriteBatch spriteBatch;
         GameManager m_gameManager;
         
-
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
             m_gameManager = new GameManager(this);
+            graphics.PreferredBackBufferHeight = Constants.PREFERRED_HEIGHT;
+            graphics.PreferredBackBufferWidth = Constants.PREFERRED_WIDTH;
            
         }
 
@@ -55,7 +55,7 @@ namespace Jazz
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            base.LoadContent();
         }
 
         /// <summary>
@@ -64,7 +64,8 @@ namespace Jazz
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+
+            base.UnloadContent();
         }
 
         /// <summary>
@@ -77,9 +78,10 @@ namespace Jazz
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 this.Exit();
-            base.Update(gameTime);
+
             m_gameManager.Update(gameTime);
-            //float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
+
+            base.Update(gameTime);
         }
 
         /// <summary>
@@ -90,10 +92,9 @@ namespace Jazz
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            m_gameManager.Draw(gameTime);
 
             base.Draw(gameTime);
-            //m_gameManager.Draw(gameTime);
         }
     }
 }
