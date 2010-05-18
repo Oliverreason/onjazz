@@ -17,10 +17,14 @@ namespace Jazz.Player
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class PlayerManager : Microsoft.Xna.Framework.DrawableGameComponent
+    public class PlayerManager : Microsoft.Xna.Framework.GameComponent
     {
-        Player[] m_thePlayers;
-        
+        #region Member Variables
+
+        protected Player[] m_thePlayers;
+
+        #endregion
+
         public PlayerManager(Game game)
             : base(game)
         {
@@ -33,31 +37,13 @@ namespace Jazz.Player
         /// </summary>
         public override void Initialize()
         {
-            base.Initialize();
             for (int i = 0; i < Constants.MAX_PLAYERS; i++)
             {
-                m_thePlayers[i] = new Player(Game,i);
+                m_thePlayers[i] = new Player(Game, i);
+                m_thePlayers[i].Initialize();
             }
-        }
-
-        /// <summary>
-        ///      
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // TODO: Add your initialization code here
-
-            base.LoadContent();
-        }
-
-        /// <summary>
-        ///      
-        /// </summary>
-        protected override void UnloadContent()
-        {
-            // TODO: Add your initialization code here
-
-            base.UnloadContent();
+            SetUpPlayers();     // Testing Purposes Only
+            base.Initialize();            
         }
 
         /// <summary>
@@ -66,31 +52,61 @@ namespace Jazz.Player
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
             for (int i = 0; i < Constants.MAX_PLAYERS; i++)
             {
-                if (GamePad.GetState((PlayerIndex)i).IsConnected)
+                if (m_thePlayers[i].IsActive)
                     m_thePlayers[i].Update(gameTime);
             }
-
+            base.Update(gameTime);
         }
 
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public override void Draw(GameTime gameTime)
+        public void Draw(GameTime gameTime, Matrix view, Matrix projection, int playerIndex)
         {
+            //for (int m = 0; m < Constants.MAX_PLAYERS; m++)
+            //{
+                for (int i = 0; i < Constants.MAX_PLAYERS; i++)
+                {
 
-            // TODO: Add your drawing code here
-
-            base.Draw(gameTime);
+                    if (m_thePlayers[i].IsActive) //&& m != i)
+                        m_thePlayers[i].Draw(gameTime, view, projection);
+                }
+            //}
         }
 
-
+        // Extras
         public Player GetPlayerIndex(int iIndex)
         {
             return m_thePlayers[iIndex];
+        }
+        public int GetNumPlayersActive()
+        {
+            int numPlayersActive = 0;
+            for (int i = 0; i < Constants.MAX_PLAYERS; i++)
+            {
+                if (m_thePlayers[i].IsActive)
+                    numPlayersActive++;
+            }
+            return numPlayersActive;
+        }
+        // Testing Purposes Only
+        private void SetUpPlayers()
+        {
+            // Hard-Code Must Remove
+            m_thePlayers[0].IsActive = true;
+            m_thePlayers[1].IsActive = true;
+            m_thePlayers[2].IsActive = false;
+            m_thePlayers[3].IsActive = false;
+
+            m_thePlayers[0].Position = new Vector3(0.0f,0.0f,0.0f);
+            m_thePlayers[1].Position = new Vector3(0.0f,0.0f,-10.0f);
+
+            //m_thePlayers[0].FirstPersonCamera.Forward = new Vector3(0.0f, 0.0f, 1.0f);
+            //m_thePlayers[1].FirstPersonCamera.Forward = new Vector3(0.0f, 0.0f, 1.0f);
+            //m_thePlayers[1].Rotation = new Quaternion(0.0f, 90.0f, 0.0f, 1.0f);
         }
     }
 }
