@@ -40,10 +40,8 @@ namespace Jazz
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
-            base.Initialize();
             m_gameManager.Initialize();
+            base.Initialize();
         }
 
         /// <summary>

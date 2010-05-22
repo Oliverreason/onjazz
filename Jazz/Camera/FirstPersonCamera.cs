@@ -20,9 +20,8 @@ namespace Jazz.Camera
     public class FirstPersonCamera : Microsoft.Xna.Framework.GameComponent
     {
         #region Member Variables
+        protected int m_iPlayerIndex;
         protected Vector3 m_vAvatarHeadOffset;
-        protected Vector3 m_vPosition;
-        protected Vector3 m_vForward;
         protected Matrix m_mView;
         protected Matrix m_mProjection;
         protected Viewport m_vtViewPort;
@@ -36,6 +35,12 @@ namespace Jazz.Camera
         {
             // TODO: Construct any child components here
         }
+        public FirstPersonCamera(Game game, int playerIndex)
+            : base(game)
+        {
+            m_iPlayerIndex = playerIndex;
+        }
+
 
         /// <summary>
         /// Allows the game component to perform any initialization it needs to before starting
@@ -43,16 +48,13 @@ namespace Jazz.Camera
         /// </summary>
         public override void Initialize()
         {
-            // TODO: Add your initialization code here
-            base.Initialize();
-            m_vAvatarHeadOffset = new Vector3(0, 0, -15);
-            m_vPosition = new Vector3();
-            m_vForward = new Vector3(0, 0, -1);
+            m_vAvatarHeadOffset = new Vector3(0.0f, 3.14f, -1.0f);
             m_mView = Matrix.Identity;
             m_mProjection = Matrix.Identity;
             m_vtViewPort = Game.GraphicsDevice.Viewport;
             m_fAspectRatio = (float)m_vtViewPort.Width / (float)m_vtViewPort.Height;
             m_fFieldOfView = Constants.FOV_DEFAULT;
+            base.Initialize();
         }
 
         /// <summary>
@@ -63,34 +65,34 @@ namespace Jazz.Camera
         {
             base.Update(gameTime);
         }
-        public void Update(GameTime gameTime, float avatarYaw, Vector3 position, int playerIndex)
+        public void Update(GameTime gameTime, Vector3 rotation, Vector3 position)
         {
             // Keep Viewport updated
-            UpdateViewPort(playerIndex);
-         
-            Matrix rotationMatrix = Matrix.CreateRotationY(avatarYaw);
+            UpdateViewPort();
+            position += m_vAvatarHeadOffset;
 
-            Vector3 transformedheadOffset = Vector3.Transform(m_vAvatarHeadOffset, rotationMatrix);
+            // Calculate our view. We’ll translate to our position and multiply that by our rotations, just that simple.
+            m_mView = Matrix.Identity;
+            m_mView *= Matrix.CreateTranslation(-position);     // Translate
+            m_mView *= Matrix.CreateRotationZ(MathHelper.ToRadians(-rotation.Z));
+            m_mView *= Matrix.CreateRotationY(MathHelper.ToRadians(-rotation.Y));
+            m_mView *= Matrix.CreateRotationX(MathHelper.ToRadians(-rotation.X));
+            //m_mView *= Matrix.CreateFromQuaternion(Quaternion.Inverse(rotation));   // Rotate
+            
 
-            Vector3 cameraPosition = position + transformedheadOffset;
-
-            //Calculate the camera's view and projection 
-            //matrices based on current values.
-            m_mView = Matrix.CreateLookAt(cameraPosition,
-                                          m_vForward,
-                                          Vector3.Up);
-
-            m_mProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(m_fFieldOfView),
+            m_mProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45.0f),
                                                                 m_fAspectRatio,
                                                                 Constants.NEAR_CLIPPING_PLANE,
                                                                 Constants.FAR_CLIPPING_PLANE);
+            // Base Update
             Update(gameTime); 
         }
 
-        private void UpdateViewPort(int playerIndex)
+        private void UpdateViewPort()
         {
             int numPlayersActive = GameManager.m_iNumPlayersActive;
-            switch(playerIndex){
+            switch (m_iPlayerIndex)
+            {
                 case 0:
                     m_vtViewPort.X = 0;
                     m_vtViewPort.Y = 0;
@@ -132,18 +134,16 @@ namespace Jazz.Camera
             }
 
             m_fAspectRatio = (float)m_vtViewPort.Width / (float)m_vtViewPort.Height;
+            //Console.WriteLine();
+            //m_fAspectRatio
+            //m_fAspectRatio = Constants.PREFERRED_WIDTH / Constants.PREFERRED_HEIGHT;
         }
-
+ 
         #region Getters and Setters for member variables.
         public Vector3 HeadOffset
         {
             get { return m_vAvatarHeadOffset; }
             set { m_vAvatarHeadOffset = value; }
-        }
-        public Vector3 Forward
-        {
-            get { return m_vForward; }
-            set { m_vForward = value; }
         }
         public Matrix ViewMatrix
         {

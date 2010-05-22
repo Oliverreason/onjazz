@@ -23,6 +23,7 @@ namespace Jazz.Player
 
         protected Player[] m_thePlayers;
 
+
         #endregion
 
         public PlayerManager(Game game)
@@ -42,6 +43,8 @@ namespace Jazz.Player
                 m_thePlayers[i] = new Player(Game, i);
                 m_thePlayers[i].Initialize();
             }
+            Input.InputManager.HandleButton += new Input.InputManager.InputButtonHandler(HandleButtons);
+            Input.InputManager.HandleThumbstick += new Input.InputManager.InputThumbstickHandler(HandleThumbsticks);
             SetUpPlayers();     // Testing Purposes Only
             base.Initialize();            
         }
@@ -71,7 +74,7 @@ namespace Jazz.Player
                 for (int i = 0; i < Constants.MAX_PLAYERS; i++)
                 {
 
-                    if (m_thePlayers[i].IsActive) //&& m != i)
+                    if (m_thePlayers[i].IsActive && playerIndex != i)
                         m_thePlayers[i].Draw(gameTime, view, projection);
                 }
             //}
@@ -92,20 +95,32 @@ namespace Jazz.Player
             }
             return numPlayersActive;
         }
+
+        private void HandleButtons(int playerIndex, Buttons button, Constants.GamePad_ButtonState buttonState)
+        {
+            m_thePlayers[playerIndex].HandleButton(button, buttonState);
+        }
+        private void HandleThumbsticks(int playerIndex, Constants.GamePad_ThumbSticks thumbstickType, Vector2 thumbstick)
+        {
+            m_thePlayers[playerIndex].HandleThumbstick(thumbstickType, thumbstick);
+        }
+
         // Testing Purposes Only
         private void SetUpPlayers()
         {
             // Hard-Code Must Remove
             m_thePlayers[0].IsActive = true;
             m_thePlayers[1].IsActive = true;
-            m_thePlayers[2].IsActive = false;
-            m_thePlayers[3].IsActive = false;
+            m_thePlayers[2].IsActive = true;
+            m_thePlayers[3].IsActive = true;
 
-            m_thePlayers[0].Position = new Vector3(0.0f,0.0f,0.0f);
-            m_thePlayers[1].Position = new Vector3(0.0f,0.0f,-10.0f);
+            m_thePlayers[0].Position = new Vector3(0.0f, 0.0f, 0.0f);
+            m_thePlayers[1].Position = new Vector3(0.0f, 0.0f, -10.0f);
+            m_thePlayers[2].Position = new Vector3(0.0f, 0.0f, 10.0f);
+            m_thePlayers[3].Position = new Vector3(5.0f, 0.0f, 0.0f);
 
             //m_thePlayers[0].FirstPersonCamera.Forward = new Vector3(0.0f, 0.0f, 1.0f);
-            //m_thePlayers[1].FirstPersonCamera.Forward = new Vector3(0.0f, 0.0f, 1.0f);
+            //m_thePlayers[1].Facing = new Vector3(0.0f, 0.0f, 1.0f);
             //m_thePlayers[1].Rotation = new Quaternion(0.0f, 90.0f, 0.0f, 1.0f);
         }
     }

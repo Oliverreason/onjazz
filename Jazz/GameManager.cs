@@ -53,7 +53,7 @@ namespace Jazz
         {
             // Check for players active
             m_iNumPlayersActive = m_playerManager.GetNumPlayersActive();
-            m_inputManager.Update(gameTime, m_playerManager);
+            m_inputManager.Update(gameTime);
             m_playerManager.Update(gameTime);
 
             base.Update(gameTime);
