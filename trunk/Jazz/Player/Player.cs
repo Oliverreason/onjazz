@@ -33,7 +33,9 @@ namespace Jazz.Player
         protected string m_sMeshName;         // A string which stores the name of the mesh to be loaded.
         protected Matrix[] m_actorBones;      // A Matrix array which stores bone transforms for the mesh (don’t worry if you don’t understand its purpose right now).
         protected float m_fScale;              // Model Scale
-        public Quaternion m_qRotation;         // Model Rotations
+        protected Vector3 m_vRotation_Timestep;
+        protected Vector3 m_vRotation_Full;
+        protected Quaternion m_qRotationOffset;
         //public BoundingSphere WorldBounds;
         //public BoundingSphere ModelBounds;
 
@@ -55,7 +57,7 @@ namespace Jazz.Player
         // GamePad Controls
         protected Dictionary<Buttons, Associated_Actions> m_controls;
         protected bool m_isDefaultSticks;
-        protected float m_fSensitivity_Aim;         // Range from 0-2
+        protected float m_fSensitivity_Aim;         // Range from 0-1
         protected float m_fSensitivity_Move;        // Range from 0-2
         protected bool m_isAcceleration_Aim;        // Check is Acceleration on aim is on [Like mouse acceleration]
 
@@ -93,7 +95,7 @@ namespace Jazz.Player
             : base(game)
         {
             m_playerIndex = iPlayerIndex;
-            m_firstPersonCamera = new Camera.FirstPersonCamera(game);
+            m_firstPersonCamera = new Camera.FirstPersonCamera(game, iPlayerIndex);
             m_thirdPersonCamera = new Camera.ThirdPersonCamera(game);
         }
         #endregion
@@ -111,10 +113,11 @@ namespace Jazz.Player
             // Model
             m_mWorldTransform = Matrix.Identity;
             m_fScale = 1.0f;
-            m_qRotation = Quaternion.Identity;
+            m_vRotation_Timestep = new Vector3();
+            m_vRotation_Full = new Vector3();
             m_sMeshName = Constants.PLAYER_MODEL_1;
             // Physics
-            m_vFacing = new Vector3(0.0f, 0.0f, 1.0f);
+            m_vFacing = new Vector3(0.0f, 0.0f, -1.0f);
             m_vPosition = new Vector3();
             m_vVelocity = new Vector3();
             m_fMass = 0.0f;
@@ -122,13 +125,13 @@ namespace Jazz.Player
             m_firstPersonCamera.Initialize();
             m_thirdPersonCamera.Initialize();
             // Player States
-            m_isActive = true;
+            m_isActive = false;
             m_aMovementState = Constants.Movement_state.NO_ACTION;
             m_wWeaponState = Constants.Weapon_state.NO_ACTION;
             // GamePad Controls
             m_controls = new Dictionary<Buttons, Associated_Actions>();
             m_isDefaultSticks = true;
-            m_fSensitivity_Aim = 1.0f; 
+            m_fSensitivity_Aim = .5f; 
             m_fSensitivity_Move = 1.0f;
             m_isAcceleration_Aim = false;
             LoadContent();
@@ -168,26 +171,37 @@ namespace Jazz.Player
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            //Console.WriteLine(m_playerIndex.ToString() + " has run its update.");
             // Update 1st-Person Camera
-            m_firstPersonCamera.Update(gameTime, 0.0f, m_vPosition, m_playerIndex);
-            // Model -> World Transforms
-            m_mWorldTransform = Matrix.CreateScale(m_fScale);                   // scale
-            m_mWorldTransform *= Matrix.CreateFromQuaternion(m_qRotation);      // rotate
-            m_mWorldTransform *= Matrix.CreateTranslation(m_vPosition);         // transform
+            m_firstPersonCamera.Update(gameTime, m_vRotation_Full, m_vPosition);
 
-            // Update Movement
-            UpdateMovement(gameTime);
-
+            UpdateModel();              // Update Model Transformations
+            UpdateMovement(gameTime);   // Update Movement
+            UpdateAim(gameTime);        // Update Aim
+            
             base.Update(gameTime);
         }
 
+        public void UpdateModel()
+        {
+            // Model -> World Transforms
+            m_mWorldTransform = Matrix.CreateScale(m_fScale);                   // scale
+            m_mWorldTransform *= Matrix.CreateRotationY(MathHelper.ToRadians(m_vRotation_Full.Y));         // rotate
+            m_mWorldTransform *= Matrix.CreateTranslation(m_vPosition);         // transform
+        }
         public void UpdateMovement(GameTime gameTime)
         {
             // Move Player
             float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
+            //m_vPosition += Vector3.Multiply(m_vVelocity, fDeltaTime)-1/2at^2;
             m_vPosition += Vector3.Multiply(m_vVelocity, fDeltaTime);
-            
+        }
+        public void UpdateAim(GameTime gameTime)
+        {
+            float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
+            m_vRotation_Full += m_vRotation_Timestep * m_fSensitivity_Aim * (360.0f * fDeltaTime);
+            m_vRotation_Full.X = MathHelper.Clamp(m_vRotation_Full.X,
+                                                 Constants.PITCH_MIN,
+                                                 Constants.PITCH_MAX);
         }
         public void UpdateCollisions(GameTime gameTime) { }
         public void UpdateAnimations(GameTime gameTime) { }
@@ -237,34 +251,18 @@ namespace Jazz.Player
 
         public void HandleButton(Buttons button, Constants.GamePad_ButtonState buttonState)
         {
-            //Console.WriteLine(button.ToString() + " is " + buttonState.ToString() + ".");
             if (m_controls.ContainsKey(button) && m_controls[button].Button_State.Equals(buttonState))
-            {
                 CaculateGameControls(m_controls[button].Action_State);
-            }
         }
 
-        public void HandleStick(GameTime gameTime, Constants.Thumbstick_selection thumbstickSelection)
+        public void HandleThumbstick(Constants.GamePad_ThumbSticks thumbstickType, Vector2 thumbstick)
         {
-            //if (thumbstickSelection == Constants.Thumbstick_selection.LEFT)
-            //{
-            //    Console.WriteLine("Left thumbstick moved.");
-            //    if (m_isDefaultSticks)
-            //        CalculateVelocityVector(gameTime);
-            //    else
-            //        CalculateFrontVector(gameTime);
-            //}
-            //else  // right thumbstick
-            //{
-            //    Console.WriteLine("Right thumbstick moved.");
-            //    if (m_isDefaultSticks)
-            //        CalculateFrontVector(gameTime);
-            //    else
-            //        CalculateVelocityVector(gameTime);
-            //}
-
-            CalculateVelocityVector(gameTime);
-            CalculateFrontVector(gameTime);
+            if (((thumbstickType.Equals(Constants.GamePad_ThumbSticks.LEFT)) && m_isDefaultSticks) ||
+                 ((thumbstickType.Equals(Constants.GamePad_ThumbSticks.RIGHT)) && !m_isDefaultSticks))
+                CalculateVelocityVector(thumbstick);
+            else if (((thumbstickType.Equals(Constants.GamePad_ThumbSticks.RIGHT)) && m_isDefaultSticks) ||
+                     ((thumbstickType.Equals(Constants.GamePad_ThumbSticks.LEFT)) && !m_isDefaultSticks))
+                CalculateFrontVector(thumbstick);
         }
 
         private void CaculateGameControls(Constants.Action_state actionState)
@@ -298,50 +296,20 @@ namespace Jazz.Player
             }
         }
 
-        private void CalculateFrontVector(GameTime gameTime)
+        private void CalculateFrontVector(Vector2 thumbstick)
         {
-            
+            m_vRotation_Timestep.X = thumbstick.Y;
+            m_vRotation_Timestep.Y = -1 * thumbstick.X;
         }
 
         /// <summary>
-        /// Convert thumbstick vector to a 3d vector.
-        /// Find angle between front vector and thumbstick vector.
-        /// Rotate forward facing vector around the y-axis using angle found above.
-        /// Get percentage of stick movement.
-        /// Find new velocity.
-        /// By percentage of stick movement as the scale factor and applying a spring to the velocity.
         /// </summary>
-        private void CalculateVelocityVector(GameTime gameTime)
+        private void CalculateVelocityVector(Vector2 thumbstick)
         {
-            //Vector3 vGoal = new Vector3();
-            Vector2 vStickOffset = new Vector2();
-            //float fPercent;
-
-            //if (m_isDefaultSticks)
-            //    vStickOffset = GamePad.GetState((PlayerIndex)m_playerIndex).ThumbSticks.Right;
-            //else
-            //    vStickOffset = GamePad.GetState((PlayerIndex)m_playerIndex).ThumbSticks.Left;
-            //vGoal.X = vStickOffset.X;
-            //vGoal.Z = -1*vStickOffset.Y;
-
-            ////Console.WriteLine(vGoal.X.ToString() + " // " + vGoal.Z.ToString());
-            //double radians = Math.Acos(Vector3.Dot(Vector3.Forward, vGoal));
-            //vGoal = Objects.Math.Vector3MultiplyMatrix(m_vFacing, Matrix.CreateRotationY(MathHelper.ToRadians((float)radians)));
-            //fPercent = vStickOffset.Length() / 1;
-            //vGoal.Normalize();
-            //vGoal *= Constants.MAX_MSPEED * fPercent;
-            //float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
-            //m_vVelocity = Objects.Spring.Interpolate(m_vVelocity, vGoal, fDeltaTime, 2.0f * m_fSensitivity_Move + Constants.MOVEMENT_DAMP);
-            //m_vVelocity = vGoal;
-            if (m_isDefaultSticks)
-                vStickOffset = GamePad.GetState((PlayerIndex)m_playerIndex).ThumbSticks.Right;
-            else
-                vStickOffset = GamePad.GetState((PlayerIndex)m_playerIndex).ThumbSticks.Left;
             m_vVelocity = Vector3.Zero;
-            m_vVelocity.X = vStickOffset.X;
-            m_vVelocity.Z = -1 * vStickOffset.Y;
-            m_vVelocity *= Constants.MAX_MSPEED ;
-
+            m_vVelocity.X = thumbstick.X;
+            m_vVelocity.Z = -1 * thumbstick.Y;
+            m_vVelocity *= Constants.MAX_MSPEED;
         }
 
         #endregion
@@ -380,12 +348,12 @@ namespace Jazz.Player
             get { return m_fScale; }
             set { m_fScale = value; }
         }
-        public Quaternion Rotation
-        {
-            get { return m_qRotation; }
-            set { m_qRotation = value; }
-        }
         // Physics
+        public Vector3 Facing
+        {
+            get { return m_vFacing; }
+            set { m_vFacing = value; }
+        }
         public Vector3 Position
         {
             get { return m_vPosition; }

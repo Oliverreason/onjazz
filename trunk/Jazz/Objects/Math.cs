@@ -22,5 +22,12 @@ namespace Jazz.Objects
 
         }
 
+        public static Matrix LookAt(Vector3 left,Vector3 front, Vector3 up)
+        {
+            return Matrix.Identity;
+        }
+
+
+
     }
 }
