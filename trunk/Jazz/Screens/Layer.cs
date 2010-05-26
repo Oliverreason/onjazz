@@ -12,17 +12,23 @@ using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
 
 
-namespace Jazz.GameState
+namespace Jazz.Screens
 {
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class GameState : Microsoft.Xna.Framework.GameComponent
+    public abstract class Layer : Microsoft.Xna.Framework.DrawableGameComponent
     {
-        public GameState(Game game)
+        protected Constants.GameLayers m_gameLayerType;
+        protected List<MenuItem> m_lMenuItems;
+        protected bool m_IsDrawable;
+        protected bool m_IsSelected;
+        protected Vector2 m_vStart;
+
+        public Layer(Game game)
             : base(game)
         {
-            // TODO: Construct any child components here
+            m_lMenuItems = new List<MenuItem>();
         }
 
         /// <summary>
@@ -31,8 +37,10 @@ namespace Jazz.GameState
         /// </summary>
         public override void Initialize()
         {
-            // TODO: Add your initialization code here
-
+            m_IsDrawable = false;
+            m_IsSelected = false;
+            m_vStart = new Vector2();
+            BuildMenu();
             base.Initialize();
         }
 
@@ -42,9 +50,28 @@ namespace Jazz.GameState
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            // TODO: Add your update code here
-
             base.Update(gameTime);
+        }
+
+        #region Abstract Functions
+        protected abstract void BuildMenu();
+        public abstract Constants.GameLayers HandleButton(Buttons button, Constants.GamePad_ButtonState buttonState);
+        public abstract GameScreen GetNewGameScreen();
+        #endregion
+
+        public bool IsDrawable
+        {
+            get { return m_IsDrawable; }
+            set { m_IsDrawable = value; }
+        }
+        public bool IsSelected
+        {
+            get { return m_IsSelected; }
+            set { m_IsSelected = value; }
+        }
+        public Constants.GameLayers LayerType
+        {
+            get { return m_gameLayerType; }
         }
     }
 }

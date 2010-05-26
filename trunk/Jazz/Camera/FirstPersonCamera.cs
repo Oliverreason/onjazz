@@ -74,11 +74,9 @@ namespace Jazz.Camera
             // Calculate our view. We’ll translate to our position and multiply that by our rotations, just that simple.
             m_mView = Matrix.Identity;
             m_mView *= Matrix.CreateTranslation(-position);     // Translate
-            m_mView *= Matrix.CreateRotationZ(MathHelper.ToRadians(-rotation.Z));
+            m_mView *= Matrix.CreateRotationZ(MathHelper.ToRadians(rotation.Z));
             m_mView *= Matrix.CreateRotationY(MathHelper.ToRadians(-rotation.Y));
             m_mView *= Matrix.CreateRotationX(MathHelper.ToRadians(-rotation.X));
-            //m_mView *= Matrix.CreateFromQuaternion(Quaternion.Inverse(rotation));   // Rotate
-            
 
             m_mProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45.0f),
                                                                 m_fAspectRatio,
@@ -90,7 +88,8 @@ namespace Jazz.Camera
 
         private void UpdateViewPort()
         {
-            int numPlayersActive = GameManager.m_iNumPlayersActive;
+            //int numPlayersActive = GameManager.m_iNumPlayersActive;
+            int numPlayersActive = 2;
             switch (m_iPlayerIndex)
             {
                 case 0:
@@ -164,6 +163,14 @@ namespace Jazz.Camera
         {
             get { return m_fFieldOfView; }
             set { m_fFieldOfView = MathHelper.Clamp(value, Constants.FOV_MIN, Constants.FOV_MAX); }
+        }
+        public Vector3 Forward
+        {
+            get {
+                Vector3 forward = Vector3.Negate(m_mView.Forward);
+                forward.Z *= -1;
+                return forward;
+            }
         }
         #endregion
     }
