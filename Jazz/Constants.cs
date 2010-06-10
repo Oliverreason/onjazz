@@ -36,9 +36,6 @@ namespace Jazz
         // Screen
         public const int PREFERRED_HEIGHT = 720;
         public const int PREFERRED_WIDTH = 1280;
-        // Fonts
-        public const string FONT_DEFAULT = "Fonts//Default";
-        public const string FONT_START = "Fonts//Main_Start";
         #endregion
 
 
@@ -48,8 +45,6 @@ namespace Jazz
         public enum Action_state { SHOOT, JUMP, SPRINT, WALK, THROW_NADE, SWITCH_NADE, CROUTCH, ALT_SHOOT, USE, SWITCH_WEAPON, ASSASSINATE };
         public enum GamePad_ThumbSticks { RIGHT, LEFT };
         public enum GamePad_ButtonState { JUST_PRESSED, PRESSED, JUST_RELEASED, RELEASED };
-        public enum GameScreenState { RUNNING, TRANSITION };
-        public enum GameLayers { NO_ACTION, MAIN_START, MAIN_CHOICE, MAIN_LAN, MAIN_ONLINE };
         #endregion
     }
 }

@@ -19,17 +19,18 @@ namespace Jazz
     /// </summary>
     public class GameManager : Microsoft.Xna.Framework.GameComponent
     {
-        #region Member Variables
+        // Member Variables
         protected Input.InputManager m_inputManager;
-        protected Screens.GameScreen m_previousGameScreen,
-                                     m_currentGameScreen;
-        protected Constants.GameScreenState m_gameScreenState;
-        #endregion
+        protected Player.PlayerManager m_playerManager;
+        public static int m_iNumPlayersActive = 0;
+        public static Game m_game;
 
         public GameManager(Game game)
             : base(game)
         {
-            
+            m_game = game;
+            m_inputManager = new Input.InputManager(game);
+            m_playerManager = new Player.PlayerManager(game);
         }
 
         /// <summary>
@@ -38,18 +39,27 @@ namespace Jazz
         /// </summary>
         public override void Initialize()
         {
-            m_inputManager = new Input.InputManager(Game);
-            m_currentGameScreen = new Screens.GameScreens.MainScreen(Game);
-            m_gameScreenState = Constants.GameScreenState.TRANSITION;
-
             m_inputManager.Initialize();
-            m_currentGameScreen.Initialize();
-        
+            m_playerManager.Initialize();
 
             base.Initialize();
         }
 
-        public void LoadContent()
+        /// <summary>
+        /// Allows the game component to update itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public override void Update(GameTime gameTime)
+        {
+            // Check for players active
+            m_iNumPlayersActive = m_playerManager.GetNumPlayersActive();
+            m_inputManager.Update(gameTime);
+            m_playerManager.Update(gameTime);
+
+            base.Update(gameTime);
+        }
+
+        public  void LoadContent()
         {
 
         }
@@ -59,30 +69,19 @@ namespace Jazz
 
         }
 
-        /// <summary>
-        /// Allows the game component to update itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public override void Update(GameTime gameTime)
-        {
-            m_inputManager.Update(gameTime);
-            if (m_gameScreenState == Constants.GameScreenState.TRANSITION)
-                m_gameScreenState = Constants.GameScreenState.RUNNING;
-            else if (m_gameScreenState == Constants.GameScreenState.RUNNING)
-                m_currentGameScreen.Update(gameTime);
-
-            base.Update(gameTime);
-        }
-
         public void Draw(GameTime gameTime)
         {
-            m_currentGameScreen.Draw(gameTime);            
-        }
-
-        public void ScreenStateChanged()
-        {
-            m_previousGameScreen = m_currentGameScreen;
-            m_currentGameScreen = m_previousGameScreen.GetNewGameScreen();
+            Viewport temp = Game.GraphicsDevice.Viewport;
+            for (int i = 0; i < Constants.MAX_PLAYERS; i++)
+            {
+                Player.Player player = m_playerManager.GetPlayerIndex(i);
+                if (player.IsActive)
+                {
+                    Game.GraphicsDevice.Viewport = player.FirstPersonCamera.TheViewPort;
+                    m_playerManager.Draw(gameTime, player.FirstPersonCamera.ViewMatrix, player.FirstPersonCamera.ProjectionMatrix, i);
+                }
+            }
+            Game.GraphicsDevice.Viewport = temp;
         }
     }
 }

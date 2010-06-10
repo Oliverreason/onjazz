@@ -193,12 +193,12 @@ namespace Jazz.Player
             // Move Player
             float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
             //m_vPosition += Vector3.Multiply(m_vVelocity, fDeltaTime)-1/2at^2;
-            m_vPosition += Vector3.Multiply(m_vVelocity * Constants.MAX_MSPEED, fDeltaTime);
+            m_vPosition += Vector3.Multiply(m_vVelocity, fDeltaTime);
         }
         public void UpdateAim(GameTime gameTime)
         {
             float fDeltaTime = (float)gameTime.ElapsedGameTime.Ticks / System.TimeSpan.TicksPerSecond;
-            m_vRotation_Full += m_vRotation_Timestep * m_fSensitivity_Aim * (540.0f * fDeltaTime);
+            m_vRotation_Full += m_vRotation_Timestep * m_fSensitivity_Aim * (360.0f * fDeltaTime);
             m_vRotation_Full.X = MathHelper.Clamp(m_vRotation_Full.X,
                                                  Constants.PITCH_MIN,
                                                  Constants.PITCH_MAX);
@@ -262,7 +262,7 @@ namespace Jazz.Player
                 CalculateVelocityVector(thumbstick);
             else if (((thumbstickType.Equals(Constants.GamePad_ThumbSticks.RIGHT)) && m_isDefaultSticks) ||
                      ((thumbstickType.Equals(Constants.GamePad_ThumbSticks.LEFT)) && !m_isDefaultSticks))
-                CalculateRotationVector(thumbstick);
+                CalculateFrontVector(thumbstick);
         }
 
         private void CaculateGameControls(Constants.Action_state actionState)
@@ -296,7 +296,7 @@ namespace Jazz.Player
             }
         }
 
-        private void CalculateRotationVector(Vector2 thumbstick)
+        private void CalculateFrontVector(Vector2 thumbstick)
         {
             m_vRotation_Timestep.X = thumbstick.Y;
             m_vRotation_Timestep.Y = -1 * thumbstick.X;
@@ -306,30 +306,10 @@ namespace Jazz.Player
         /// </summary>
         private void CalculateVelocityVector(Vector2 thumbstick)
         {
-            if (thumbstick != Vector2.Zero)
-            {
-                Vector2 tempVector = thumbstick;
-                tempVector.Normalize();
-                double angle = Math.Atan2(tempVector.Y, tempVector.X) + Math.Atan2(-1.0, 0.0);
-                if (angle < 0)
-                    angle += Math.PI * 2;
-                Vector3 forward = m_firstPersonCamera.Forward;
-                forward.Y = 0;
-                forward.Normalize();
-                m_vVelocity = Vector3.Transform(forward, Quaternion.CreateFromAxisAngle(Vector3.Up, (float)angle));
-                m_vVelocity *= thumbstick.Length();
-                m_aMovementState = Constants.Movement_state.JOG;
-                //Console.WriteLine((angle * 180 / Math.PI).ToString());
-            }
-            else
-            {
-                m_vVelocity = new Vector3();
-                m_aMovementState = Constants.Movement_state.NO_ACTION;
-            }
-            //m_vVelocity = Vector3.Zero;
-            //m_vVelocity.X = thumbstick.X;
-            //m_vVelocity.Z = -1 * thumbstick.Y;
-            //m_vVelocity *= Constants.MAX_MSPEED;
+            m_vVelocity = Vector3.Zero;
+            m_vVelocity.X = thumbstick.X;
+            m_vVelocity.Z = -1 * thumbstick.Y;
+            m_vVelocity *= Constants.MAX_MSPEED;
         }
 
         #endregion
