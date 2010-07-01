@@ -21,16 +21,12 @@ namespace Jazz
     {
         // Member Variables
         protected Input.InputManager m_inputManager;
-        protected Player.PlayerManager m_playerManager;
         public static int m_iNumPlayersActive = 0;
-        public static Game m_game;
 
         public GameManager(Game game)
             : base(game)
         {
-            m_game = game;
             m_inputManager = new Input.InputManager(game);
-            m_playerManager = new Player.PlayerManager(game);
         }
 
         /// <summary>
@@ -40,8 +36,7 @@ namespace Jazz
         public override void Initialize()
         {
             m_inputManager.Initialize();
-            m_playerManager.Initialize();
-
+            Layers.LayerManager.Singleton.Initialize(Game);
             base.Initialize();
         }
 
@@ -51,10 +46,8 @@ namespace Jazz
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            // Check for players active
-            m_iNumPlayersActive = m_playerManager.GetNumPlayersActive();
             m_inputManager.Update(gameTime);
-            m_playerManager.Update(gameTime);
+            Layers.LayerManager.Singleton.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -71,17 +64,7 @@ namespace Jazz
 
         public void Draw(GameTime gameTime)
         {
-            Viewport temp = Game.GraphicsDevice.Viewport;
-            for (int i = 0; i < Constants.MAX_PLAYERS; i++)
-            {
-                Player.Player player = m_playerManager.GetPlayerIndex(i);
-                if (player.IsActive)
-                {
-                    Game.GraphicsDevice.Viewport = player.FirstPersonCamera.TheViewPort;
-                    m_playerManager.Draw(gameTime, player.FirstPersonCamera.ViewMatrix, player.FirstPersonCamera.ProjectionMatrix, i);
-                }
-            }
-            Game.GraphicsDevice.Viewport = temp;
+            Layers.LayerManager.Singleton.Draw(gameTime);
         }
     }
 }
