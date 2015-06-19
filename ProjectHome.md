@@ -1,0 +1,1 @@
+First Person Shooter (FPS) highly concentrated on encouraging competitive online/LAN play.  A player choose to enlist in one of two teams (Black ops vs Military),  Black-ops is the attacking team while the Military is typically the defending team.
